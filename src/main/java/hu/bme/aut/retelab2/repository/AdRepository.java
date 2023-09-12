@@ -3,11 +3,13 @@ package hu.bme.aut.retelab2.repository;
 import hu.bme.aut.retelab2.domain.Ad;
 import hu.bme.aut.retelab2.util.SecretGenerator;
 
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -63,5 +65,23 @@ public class AdRepository {
         save(modifiedAdvertisement);
 
         return modifiedAdvertisement;
+    }
+
+    @Scheduled(fixedDelay= 6000)
+    @Transactional
+    public void deleteExpiredEntities()
+    {
+        LocalDateTime currentTime = LocalDateTime.now();
+        List<Ad> resultList = em.createQuery("select a from Ad a where a.expirationDate < ?1", Ad.class)
+                .setParameter(1, currentTime)
+                .getResultList();
+
+        if(!resultList.isEmpty()){
+            for (Ad ad : resultList) {
+                String adTitle = ad.getTitle();
+                em.remove(ad);
+                System.out.println("Advertisement with title: " + adTitle + " have been successfully removed at: " + LocalDateTime.now());
+            }
+        }
     }
 }

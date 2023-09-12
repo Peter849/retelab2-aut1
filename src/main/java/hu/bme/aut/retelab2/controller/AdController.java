@@ -12,6 +12,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/advertisement")
 public class AdController {
+
     @Autowired
     private AdRepository advertisementRepository;
 
